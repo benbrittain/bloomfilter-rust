@@ -6,15 +6,11 @@ import bitv = std::bitv;
 import sha1 = std::sha1;
 
 #[doc = "Bloom Filter Type"]
-type bloomfilter = @{storage: bitv::bitv, capacity: uint, count: uint, error_rate: f64};
+type bloomfilter = @{storage: bitv::bitv, capacity: uint, mut count: uint};
 
-fn bloomfilter(capacity: uint, error_rate: f64) -> bloomfilter {
+fn bloomfilter(capacity: uint) -> bloomfilter {
     io::println("Capacity: " + uint::to_str(capacity, 10u));
-//    let num_slices = (f64::ceil(f64::logarithm(((1.0 as f64) / (error_rate as f64) ), (2 as f64)))) as uint;
- //   let bits_per_slice= (f64::ceil(((2 as f64) * (capacity as f64) * f64::abs(f64::ln(error_rate))) /
-  //                      ((num_slices as f64) * (f64::pow((f64::ln(2 as f64)),2 as f64))))) as uint;
-    //@{storage: bitv::bitv(capacity,false), num_bits: (num_slices * bits_per_slice), bits_per_slice: bits_per_slice, num_slices: num_slices, count: 0u, error_rate: error_rate}
-    @{storage: bitv::bitv(capacity,false), capacity: capacity, count: 0u,  error_rate: error_rate}
+    @{storage: bitv::bitv(capacity,false), capacity: capacity, mut count: 0u}
 }
 
 fn add(bloomfilter: bloomfilter, elem: str){
@@ -26,12 +22,11 @@ fn add(bloomfilter: bloomfilter, elem: str){
     let mut i = 0u;
     while i < 20u {
         let loc = (hashstr[i] as uint) % (bloomfilter.capacity - 1u);
-  //      log(error,(loc));
         i += 1u;
         bitv::set(bloomfilter.storage, loc, true);
     } 
-    
-   // log(error,hashstr[0]); 
+    bloomfilter.count += 1u;
+    assert bloomfilter.count <= bloomfilter.capacity;
 }
 
 fn contains(bloomfilter: bloomfilter, elem: str) -> bool {
@@ -42,8 +37,6 @@ fn contains(bloomfilter: bloomfilter, elem: str) -> bool {
     let mut i = 0u;
     while i < 20u {
         let loc = (hashstr[i] as uint) % (bloomfilter.capacity - 1u);
-//        log(error,(loc));
-       
         let val = bitv::get(bloomfilter.storage, loc);
         if val == false {
             ret false;
@@ -52,3 +45,21 @@ fn contains(bloomfilter: bloomfilter, elem: str) -> bool {
     }
     ret true;
 } 
+
+fn equal(bloomfilter_one: bloomfilter, bloomfilter_two: bloomfilter) -> bool {
+    assert bloomfilter_one.capacity == bloomfilter_two.capacity;
+    if bitv::equal(bloomfilter_one.storage,bloomfilter_two.storage){
+        true
+    } else {
+        false
+    }
+}
+
+fn union(bloomfilter_one: bloomfilter, bloomfilter_two: bloomfilter) -> bloomfilter {
+    assert bloomfilter_one.capacity == bloomfilter_two.capacity;
+    let bloomfilter_new = copy bloomfilter_one;
+    bitv::union(bloomfilter_new.storage,bloomfilter_two.storage);
+    let count_new = bloomfilter_one.count + bloomfilter_two.count;
+    bloomfilter_new.count = count_new;
+    bloomfilter_new
+}
