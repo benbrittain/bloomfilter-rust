@@ -3,16 +3,18 @@
 
 use std;
 import bitv = std::bitv;
-import sha1 = std::sha1;
 
 #[doc = "Bloom Filter Type"]
-type bloomfilter = @{storage: bitv::bitv, capacity: uint, mut count: uint, hash_funcs: [(fn@(str) -> [u8])]};
+type bloomfilter<T> = @{storage: bitv::bitv, capacity: uint, mut count: uint, hash_funcs: [(fn@(++T) -> [u8])]};
 
-fn bloomfilter(capacity: uint, hash_funcs: [(fn@(str) -> [u8])]) -> bloomfilter {
+#[doc = "create a Bloom Filter. Requires a capacity and an array of hashing functions to use. The hashing functions return type must be [u8]"]
+fn bloomfilter<T>(capacity: uint, hash_funcs: [(fn@(++T) -> [u8])]) -> bloomfilter<T> {
     @{storage: bitv::bitv(capacity,false), capacity: capacity, mut count: 0u, hash_funcs: copy hash_funcs}
 }
 
-fn add(bloomfilter: bloomfilter, elem: str){
+
+#[doc = "add an element to the bloomfilter"]
+fn add<T>(bloomfilter: bloomfilter<T>, elem: T ){
     for vec::each(bloomfilter.hash_funcs) {|func|
         let hashstr:[u8] = func(elem); 
             for vec::each(hashstr) {|elm|
@@ -24,7 +26,8 @@ fn add(bloomfilter: bloomfilter, elem: str){
     assert bloomfilter.count <= bloomfilter.capacity;
 }
 
-fn contains(bloomfilter: bloomfilter, elem: str) -> bool {
+#[doc = "check to see if the element might be in the bloomfilter (or certainly not)"]
+fn contains<T>(bloomfilter: bloomfilter<T>, elem: T ) -> bool {
     for vec::each(bloomfilter.hash_funcs) {|func|
         let hashstr:[u8] = func(elem); 
             for vec::each(hashstr) {|elm|
@@ -39,7 +42,8 @@ fn contains(bloomfilter: bloomfilter, elem: str) -> bool {
     ret true;
 } 
 
-fn equal(bloomfilter_one: bloomfilter, bloomfilter_two: bloomfilter) -> bool {
+#[doc = "check to see if two bloomfilters are equal. Must be the same size"]
+fn equal<T>(bloomfilter_one: bloomfilter<T>, bloomfilter_two: bloomfilter<T>) -> bool {
     assert bloomfilter_one.capacity == bloomfilter_two.capacity;
     if bitv::equal(bloomfilter_one.storage,bloomfilter_two.storage){
         true
@@ -48,7 +52,8 @@ fn equal(bloomfilter_one: bloomfilter, bloomfilter_two: bloomfilter) -> bool {
     }
 }
 
-fn union(bloomfilter_one: bloomfilter, bloomfilter_two: bloomfilter) -> bloomfilter {
+#[doc = "merge two bloom filters together. Must be the same size"]
+fn union<T>(bloomfilter_one: bloomfilter<T>, bloomfilter_two: bloomfilter<T>) -> bloomfilter<T> {
     assert bloomfilter_one.capacity == bloomfilter_two.capacity;
     let bloomfilter_new = copy bloomfilter_one;
     bitv::union(bloomfilter_new.storage,bloomfilter_two.storage);
