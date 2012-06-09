@@ -14,15 +14,19 @@ bloomfilter.rs
 a library file. usage like so:
 
 to create:
+
     let bfilter = bloomfilter::bloomfilter(10000u, [sha1]);
 
 to add:
+
     bloomfilter::add(bfilter, "example");
 
 to check if in filter:
+
     bloomfilter::contains(bfilter,"example");
 
 to combine filters:
+
     let bfilter3 = bloomfilter::union(bfilter, bfilter2);
  
 
