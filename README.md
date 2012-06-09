@@ -36,11 +36,18 @@ ensures everything works throughout the development of rust.
 an example hashing function from within the test file
 
 import sha1 = std::sha1;
+
 fn sha1(elem: str) -> [u8] {
+
     let sha1 = sha1::sha1();
+
     sha1.input_str(elem);
+
     let hashstr = sha1.result();
+
     sha1.reset();
+
     hashstr
+
 }
 
