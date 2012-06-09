@@ -1,5 +1,10 @@
-#[link(name = "bloomfilter", vers = "0.1", author = "bbrittain")];
+#[link(name = "bloomfilter", vers = "0.2", author = "Ben Brittain")];
 #[crate_type = "lib"];
+export bloomfilter;
+export add;
+export contains;
+export equal;
+export union;
 
 use std;
 import bitv = std::bitv;
@@ -61,3 +66,5 @@ fn union<T>(bloomfilter_one: bloomfilter<T>, bloomfilter_two: bloomfilter<T>) ->
     bloomfilter_new.count = count_new;
     bloomfilter_new
 }
+
+
