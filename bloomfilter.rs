@@ -1,12 +1,3 @@
-#[link(name = "bloomfilter", vers = "0.2", author = "Ben Brittain")];
-#[crate_type = "lib"];
-export bloomfilter;
-export add;
-export contains;
-export equal;
-export union;
-
-use std;
 import bitv = std::bitv;
 
 #[doc = "Bloom Filter Type"]

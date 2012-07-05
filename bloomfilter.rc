@@ -1,0 +1,12 @@
+#[link(name = "bloomfilter", vers = "0.2", author = "Ben Brittain")];
+#[crate_type = "lib"];
+
+use std;
+
+export bloomfilter;
+export add;
+export contains;
+export equal;
+export union;
+
+mod test;
