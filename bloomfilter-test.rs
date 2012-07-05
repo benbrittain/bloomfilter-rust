@@ -68,7 +68,7 @@ fn test4() {
         let hashstr = sha1.result();
         sha1.reset();
         let mut newhash: [u8] = [];
-        for vec::each(hashstr) {|elm|
+        for vec::each(hashstr) |elm| {
             newhash = newhash + [elm + 3 as u8];
         }
         newhash 
