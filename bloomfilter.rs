@@ -1,12 +1,3 @@
-#[link(name = "bloomfilter", vers = "0.2", author = "Ben Brittain")];
-#[crate_type = "lib"];
-export bloomfilter;
-export add;
-export contains;
-export equal;
-export union;
-
-use std;
 import bitv = std::bitv;
 
 #[doc = "Bloom Filter Type"]
@@ -20,9 +11,9 @@ fn bloomfilter<T>(capacity: uint, hash_funcs: [(fn@(++T) -> [u8])]) -> bloomfilt
 
 #[doc = "add an element to the bloomfilter"]
 fn add<T>(bloomfilter: bloomfilter<T>, elem: T ){
-    for vec::each(bloomfilter.hash_funcs) {|func|
+    for vec::each(bloomfilter.hash_funcs) |func| {
         let hashstr:[u8] = func(elem); 
-            for vec::each(hashstr) {|elm|
+            for vec::each(hashstr) |elm| {
                 let loc = (elm as uint) % (bloomfilter.capacity - 1u);
                 bitv::set(bloomfilter.storage, loc, true);
             }
@@ -33,9 +24,9 @@ fn add<T>(bloomfilter: bloomfilter<T>, elem: T ){
 
 #[doc = "check to see if the element might be in the bloomfilter (or certainly not)"]
 fn contains<T>(bloomfilter: bloomfilter<T>, elem: T ) -> bool {
-    for vec::each(bloomfilter.hash_funcs) {|func|
+    for vec::each(bloomfilter.hash_funcs) |func| {
         let hashstr:[u8] = func(elem); 
-            for vec::each(hashstr) {|elm|
+        for vec::each(hashstr) |elm| {
                 let loc = (elm as uint) % (bloomfilter.capacity - 1u);
                 let val = bitv::get(bloomfilter.storage, loc);
                 if val == false {
