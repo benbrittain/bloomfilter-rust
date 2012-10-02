@@ -1,21 +1,21 @@
-import bitv = std::bitv;
+use bitv = std::bitv;
 
 #[doc = "Bloom Filter Type"]
-type bloomfilter<T> = @{storage: bitv::bitv, capacity: uint, mut count: uint, hash_funcs: [(fn@(++T) -> [u8])]};
+type bloomfilter<T> = @{storage: bitv::Bitv, capacity: uint, mut count: uint, hash_funcs: ~[(fn@(&T) -> ~[u8])]};
 
 #[doc = "create a Bloom Filter. Requires a capacity and an array of hashing functions to use. The hashing functions return type must be [u8]"]
-fn bloomfilter<T>(capacity: uint, hash_funcs: [(fn@(++T) -> [u8])]) -> bloomfilter<T> {
-    @{storage: bitv::bitv(capacity,false), capacity: capacity, mut count: 0u, hash_funcs: copy hash_funcs}
+fn bloomfilter<T>(capacity: uint, hash_funcs: ~[(fn@(&T) -> ~[u8])]) -> bloomfilter<T> {
+    @{storage: bitv::Bitv(capacity,false), capacity: capacity, mut count: 0u, hash_funcs: copy hash_funcs}
 }
 
 
 #[doc = "add an element to the bloomfilter"]
-fn add<T>(bloomfilter: bloomfilter<T>, elem: T ){
+fn add<T>(bloomfilter: bloomfilter<T>, elem: &T ){
     for vec::each(bloomfilter.hash_funcs) |func| {
-        let hashstr:[u8] = func(elem); 
+        let hashstr:~[u8] = (*func)(elem); 
             for vec::each(hashstr) |elm| {
-                let loc = (elm as uint) % (bloomfilter.capacity - 1u);
-                bitv::set(bloomfilter.storage, loc, true);
+                let loc = (*elm as uint) % (bloomfilter.capacity - 1u);
+                bloomfilter.storage.set(loc, true);
             }
     }
     bloomfilter.count += 1u;
@@ -23,25 +23,25 @@ fn add<T>(bloomfilter: bloomfilter<T>, elem: T ){
 }
 
 #[doc = "check to see if the element might be in the bloomfilter (or certainly not)"]
-fn contains<T>(bloomfilter: bloomfilter<T>, elem: T ) -> bool {
+fn contains<T>(bloomfilter: bloomfilter<T>, elem: &T ) -> bool {
     for vec::each(bloomfilter.hash_funcs) |func| {
-        let hashstr:[u8] = func(elem); 
+        let hashstr:~[u8] = (*func)(elem); 
         for vec::each(hashstr) |elm| {
-                let loc = (elm as uint) % (bloomfilter.capacity - 1u);
-                let val = bitv::get(bloomfilter.storage, loc);
+                let loc = (*elm as uint) % (bloomfilter.capacity - 1u);
+                let val = bloomfilter.storage.get(loc);
                 if val == false {
-                    ret false;
+                    return false;
                 } 
-                bitv::set(bloomfilter.storage, loc, true);
+                bloomfilter.storage.set(loc, true);
             }
     }
-    ret true;
+    return true;
 } 
 
 #[doc = "check to see if two bloomfilters are equal. Must be the same size"]
 fn equal<T>(bloomfilter_one: bloomfilter<T>, bloomfilter_two: bloomfilter<T>) -> bool {
     assert bloomfilter_one.capacity == bloomfilter_two.capacity;
-    if bitv::equal(bloomfilter_one.storage,bloomfilter_two.storage){
+    if bloomfilter_one.storage.equal(&bloomfilter_two.storage) {
         true
     } else {
         false
@@ -52,7 +52,7 @@ fn equal<T>(bloomfilter_one: bloomfilter<T>, bloomfilter_two: bloomfilter<T>) ->
 fn union<T>(bloomfilter_one: bloomfilter<T>, bloomfilter_two: bloomfilter<T>) -> bloomfilter<T> {
     assert bloomfilter_one.capacity == bloomfilter_two.capacity;
     let bloomfilter_new = copy bloomfilter_one;
-    bitv::union(bloomfilter_new.storage,bloomfilter_two.storage);
+    bloomfilter_new.storage.union(&bloomfilter_two.storage);
     let count_new = bloomfilter_one.count + bloomfilter_two.count;
     bloomfilter_new.count = count_new;
     bloomfilter_new
