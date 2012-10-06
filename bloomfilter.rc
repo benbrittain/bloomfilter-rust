@@ -1,7 +1,7 @@
 #[link(name = "bloomfilter", vers = "0.2", author = "Ben Brittain")];
 #[crate_type = "lib"];
 
-use std;
+extern mod std;
 
 export bloomfilter;
 export add;
